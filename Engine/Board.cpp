@@ -25,7 +25,7 @@ Board::Board(const Difficulty& difficulty, Graphics& gfx)
 	case Difficulty::VeryHard:
 		nColumns = 40;
 		nRows = 32;
-		nMines = 300;
+		nMines = 150;
 		break;
 	}
 	topleft = gfx.Center() - (Location(nColumns, nRows) / 2) * Tile::size;
@@ -33,7 +33,10 @@ Board::Board(const Difficulty& difficulty, Graphics& gfx)
 	//Create tiles
 	for (int y = 0; y < nRows; y++)
 	{
-		for (int x = 0; x < nColumns; x++) tile.push_back(std::make_unique <Tile>(Location(x, y), topleft));
+		for (int x = 0; x < nColumns; x++) {
+			tile.push_back(std::make_unique <Tile>(Location(x, y), topleft));
+			//if (x == 0 || x == nColumns - 1 || y == 0 || y == nRows - 1) tile[GetIndex({ x, y })]->bHasMine = true;  //Mine border :O
+		}
 	}
 	//Spawn mines
 	for (int i = 0; i < nMines; i++)
@@ -60,9 +63,14 @@ void Board::Update(Mouse& mouse)
 		tile[i]->Update(pointer);
 		if (tile[i]->bHovered)
 		{
-			if (mouse.LeftIsPressed() && !bLMB_inhibited) tile[i]->Reveal();
+			if (mouse.LeftIsPressed() && !bLMB_inhibited && tile[i]->state == Tile::State::Hidden)
+			{
+				tile[i]->Reveal();
+				if (tile[i]->nNeighborMines == 0) RevealNeighborTiles(i);
+			}
 			if (mouse.RightIsPressed() && !bRMB_inhibited) tile[i]->ToggleFlag();
 		}
+		if (tile[i]->state == Tile::State::Revealed && tile[i]->nNeighborMines == 0) RevealNeighborTiles(i);
 	}
 
 	bLMB_inhibited = mouse.LeftIsPressed();
@@ -89,6 +97,22 @@ int Board::CountNeighborMines(int tileIndex)
 	}
 
 	return nMines;
+}
+
+void Board::RevealNeighborTiles(int tileIndex)
+{
+	const int startX = std::max(0, tile[tileIndex]->gridLoc.x - 1);
+	const int endX = std::min(nColumns - 1, tile[tileIndex]->gridLoc.x + 1);
+	const int startY = std::max(0, tile[tileIndex]->gridLoc.y - 1);
+	const int endY = std::min(nRows - 1, tile[tileIndex]->gridLoc.y + 1);
+
+	for (int y = startY; y <= endY; y++)
+	{
+		for (int x = startX; x <= endX; x++)
+		{
+			tile[GetIndex({ x, y })]->Reveal();
+		}
+	}
 }
 
 Board::Tile::Tile(const Location& gridLoc, const Location& board_topleft)

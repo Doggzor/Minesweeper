@@ -54,7 +54,8 @@ public:
 private:
 	int GetIndex(const Location& gridLoc);
 	int CountNeighborMines(int tileIndex);
-	void countNeighborFlags(int tileIndex);
+	int CountNeighborFlags(int tileIndex);
+	void RevealNeighborTiles(int tileIndex);
 private:
 	Difficulty diff = Difficulty::Medium;
 	Location topleft;

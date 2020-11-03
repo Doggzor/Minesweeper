@@ -25,7 +25,7 @@ Game::Game( MainWindow& wnd )
 	:
 	wnd( wnd ),
 	gfx( wnd ),
-	board(Board::Difficulty::Medium, gfx)
+	board(Board::Difficulty::VeryHard, gfx)
 {
 }
 
