@@ -25,6 +25,7 @@
 #include "ChiliException.h"
 #include "Colors.h"
 #include "Vec2.h"
+#include "Location.h"
 
 class Graphics
 {
@@ -70,6 +71,10 @@ public:
 	void DrawLine(int x0, int y0, int x1, int y1, Color c)
 	{
 		DrawLine({ (float)x0, (float)y0 }, { (float)x1, (float)y1 }, c);
+	}
+	Location Center()
+	{
+		return {ScreenWidth / 2, ScreenHeight / 2};
 	}
 	~Graphics();
 private:
