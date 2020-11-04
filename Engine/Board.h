@@ -50,11 +50,12 @@ public:
 	Board(const Difficulty& difficulty, Graphics& gfx);
 
 	void Draw(Graphics& gfx);
-	void Update(Mouse& mouse);
+	void Update(Mouse& mouse, const Location& pointer);
 private:
 	int GetIndex(const Location& gridLoc);
 	int CountNeighborMines(int tileIndex);
 	int CountNeighborFlags(int tileIndex);
+	void RevealTile(int tileIndex);
 	void RevealNeighborTiles(int tileIndex);
 private:
 	Difficulty diff = Difficulty::Medium;
@@ -63,7 +64,6 @@ private:
 	int nColumns = 0;
 	int nRows = 0;
 	int nMines = 0;
-	Location pointer = { 0, 0 };
 	bool bLMB_inhibited = false;
 	bool bRMB_inhibited = false;
 };

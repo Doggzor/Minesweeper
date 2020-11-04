@@ -55,9 +55,8 @@ void Board::Draw(Graphics& gfx)
 	for (int i = 0; i < tile.size(); i++) tile[i]->Draw(topleft, gfx);
 }
 
-void Board::Update(Mouse& mouse)
+void Board::Update(Mouse& mouse, const Location& pointer)
 {
-	pointer = { mouse.GetPosX(), mouse.GetPosY() };
 	for (int i = 0; i < tile.size(); i++)
 	{
 		tile[i]->Update(pointer);
@@ -65,12 +64,10 @@ void Board::Update(Mouse& mouse)
 		{
 			if (mouse.LeftIsPressed() && !bLMB_inhibited && tile[i]->state == Tile::State::Hidden)
 			{
-				tile[i]->Reveal();
-				if (tile[i]->nNeighborMines == 0) RevealNeighborTiles(i);
+				RevealTile(i);
 			}
 			if (mouse.RightIsPressed() && !bRMB_inhibited) tile[i]->ToggleFlag();
 		}
-		if (tile[i]->state == Tile::State::Revealed && tile[i]->nNeighborMines == 0) RevealNeighborTiles(i);
 	}
 
 	bLMB_inhibited = mouse.LeftIsPressed();
@@ -99,6 +96,29 @@ int Board::CountNeighborMines(int tileIndex)
 	return nMines;
 }
 
+int Board::CountNeighborFlags(int tileIndex)
+{
+	const int startX = std::max(0, tile[tileIndex]->gridLoc.x - 1);
+	const int endX = std::min(nColumns - 1, tile[tileIndex]->gridLoc.x + 1);
+	const int startY = std::max(0, tile[tileIndex]->gridLoc.y - 1);
+	const int endY = std::min(nRows - 1, tile[tileIndex]->gridLoc.y + 1);
+
+	int nFlags = 0;
+
+	for (int y = startY; y <= endY; y++)
+	{
+		for (int x = startX; x <= endX; x++) if (tile[GetIndex({ x, y })]->state == Tile::State::Flagged) nFlags++;
+	}
+
+	return nFlags;
+}
+
+void Board::RevealTile(int tileIndex)
+{
+	tile[tileIndex]->Reveal();
+	if (tile[tileIndex]->nNeighborMines == 0) RevealNeighborTiles(tileIndex);
+}
+
 void Board::RevealNeighborTiles(int tileIndex)
 {
 	const int startX = std::max(0, tile[tileIndex]->gridLoc.x - 1);
@@ -110,7 +130,7 @@ void Board::RevealNeighborTiles(int tileIndex)
 	{
 		for (int x = startX; x <= endX; x++)
 		{
-			tile[GetIndex({ x, y })]->Reveal();
+			if(tile[GetIndex({ x, y })]->state == Tile::State::Hidden) RevealTile(GetIndex({ x, y }));
 		}
 	}
 }

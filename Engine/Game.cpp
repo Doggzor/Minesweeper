@@ -39,7 +39,8 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
-	board.Update(wnd.mouse);
+	pointer = { wnd.mouse.GetPosX(), wnd.mouse.GetPosY() };
+	board.Update(wnd.mouse, pointer);
 }
 
 void Game::ComposeFrame()
