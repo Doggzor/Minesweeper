@@ -15,5 +15,13 @@ struct Rect
 	{
 		return point.x > left && point.x < right&& point.y > top && point.y < bottom;
 	}
+	const int GetWidth() const
+	{
+		return right - left;
+	}
+	const int GetHeight() const
+	{
+		return bottom - top;
+	}
 	int left, right, top, bottom;
 };

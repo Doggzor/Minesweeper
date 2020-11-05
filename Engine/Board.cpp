@@ -52,11 +52,21 @@ Board::Board(const Difficulty& difficulty, Graphics& gfx)
 
 void Board::Draw(Graphics& gfx)
 {
+	const Rect ClockRect = { {GetRect().right - 64 - nBorderThickness, GetRect().top - 25 - nBorderThickness * 3 / 2}, 64 + nBorderThickness, 25 + nBorderThickness };
+	const Rect MineCountRect = { {GetRect().left, GetRect().top - 25 - nBorderThickness * 3 / 2}, 43 + nBorderThickness, 25 + nBorderThickness };
 	for (int i = 0; i < tile.size(); i++) tile[i]->Draw(topleft, gfx);
+	gfx.DrawRectEmpty(GetRect().left, GetRect().top, GetRect().right - GetRect().left, GetRect().bottom - GetRect().top, -nBorderThickness, { 48, 48, 48 });
+	gfx.DrawRect(GetRect().left - nBorderThickness, GetRect().top - nBorderThickness * 2 - 25, GetRect().right + nBorderThickness, GetRect().top, { 48, 48, 48 });
+	gfx.DrawRectDim(ClockRect.left, ClockRect.top, ClockRect.GetWidth(), ClockRect.GetHeight(), Colors::Gray);
+	numb.DrawClock(ClockRect.left + nBorderThickness / 2, ClockRect.top + nBorderThickness / 2, fElapsedTime, Colors::Yellow, gfx);
+	gfx.DrawRectDim(MineCountRect.left, MineCountRect.top, MineCountRect.GetWidth(), MineCountRect.GetHeight(), Colors::Gray);
+	numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, nMines, c, gfx);
 }
 
 void Board::Update(Mouse& mouse)
 {
+	const float dt = ft.Mark();
+	fElapsedTime += dt;
 	for (int i = 0; i < tile.size(); i++)
 	{
 		tile[i]->Update(mouse);
@@ -155,6 +165,11 @@ void Board::PressNeighborTiles(int tileIndex)
 			if (tile[GetIndex({ x, y })]->state == Tile::State::Hidden && GetIndex({ x, y }) != tileIndex) tile[GetIndex({ x, y })]->bPressed = true;
 		}
 	}
+}
+
+const Rect Board::GetRect() const
+{
+	return Rect(topleft, nColumns * Tile::size, nRows * Tile::size);
 }
 
 Board::Tile::Tile(const Location& gridLoc, const Location& board_topleft)

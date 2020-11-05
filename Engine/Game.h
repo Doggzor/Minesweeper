@@ -23,8 +23,6 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "Graphics.h"
-#include "Numbers.h"
-#include "FrameTimer.h"
 #include "Board.h"
 
 class Game
@@ -45,10 +43,6 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables              */
-    FrameTimer ft;
-	Numbers numb;
-
 	Board board;
-	float fElapsedTime = 0;
 	/********************************/
 };

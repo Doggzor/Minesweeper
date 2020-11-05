@@ -5,6 +5,8 @@
 #include "rng.h"
 #include "img.h"
 #include "Rect.h"
+#include "FrameTimer.h"
+#include "Numbers.h"
 #include <memory>
 class Board
 {
@@ -59,14 +61,20 @@ private:
 	void RevealTile(int tileIndex);
 	void RevealNeighborTiles(int tileIndex);
 	void PressNeighborTiles(int tileIndex);
+	const Rect GetRect() const;
 private:
+	FrameTimer ft;
+	Numbers numb;
 	Difficulty diff = Difficulty::Medium;
 	Location topleft;
 	std::vector< std::unique_ptr < Tile > > tile;
 	int nColumns = 0;
 	int nRows = 0;
 	int nMines = 0;
+	static constexpr int nBorderThickness = 8;
 	bool bLMB_inhibited = false;
 	bool bRMB_inhibited = false;
+
+	float fElapsedTime = 0;
 };
 

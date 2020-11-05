@@ -25,7 +25,7 @@ Game::Game( MainWindow& wnd )
 	:
 	wnd( wnd ),
 	gfx( wnd ),
-	board(Board::Difficulty::VeryHard, gfx)
+	board(Board::Difficulty::Hard, gfx)
 {
 }
 
@@ -39,14 +39,11 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
-	float dt = ft.Mark();
-	fElapsedTime += dt;
 	board.Update(wnd.mouse);
 }
 
 void Game::ComposeFrame()
 {
 	board.Draw(gfx);
-	numb.DrawClock(20, 10, fElapsedTime, Colors::Red, gfx);
 }
 
