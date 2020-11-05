@@ -193,7 +193,7 @@ void Numbers::DrawClock(int x, int y, float time, Color c, Graphics& gfx) const
 
 	if (minutes >= 99) minutes = 99;
 
-	const Color PaleBase = c * 0.6f;
+	const Color PaleBase = c * 0.3f;
 	Draw(x, y, 88, PaleBase, gfx);
 	Draw(x + offset_numb * 2 + offset_doubledot, y, 88, PaleBase, gfx);
 	if (minutes < 10)

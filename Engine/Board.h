@@ -59,6 +59,7 @@ private:
 	int CountNeighborMines(int tileIndex);
 	int CountNeighborFlags(int tileIndex);
 	void RevealTile(int tileIndex);
+	void ToggleFlagTile(int tileIndex);
 	void RevealNeighborTiles(int tileIndex);
 	void PressNeighborTiles(int tileIndex);
 	const Rect GetRect() const;
@@ -71,10 +72,15 @@ private:
 	int nColumns = 0;
 	int nRows = 0;
 	int nMines = 0;
+	int nRevealedTiles = 0;
+	int nFlaggedTiles = 0;
 	static constexpr int nBorderThickness = 8;
 	bool bLMB_inhibited = false;
 	bool bRMB_inhibited = false;
+	bool bGameWon = false;
+	bool bGameLost = false;
 	bool bGameOver = false;
 	float fElapsedTime = 0;
+	bool bStartClock = false;
 };
 

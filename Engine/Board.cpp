@@ -10,7 +10,7 @@ Board::Board(const Difficulty& difficulty, Graphics& gfx)
 	case Difficulty::Easy:
 		nColumns = 10;
 		nRows = 8;
-		nMines = 10;
+		nMines = 9;
 		break;
 	case Difficulty::Medium:
 		nColumns = 20;
@@ -53,22 +53,60 @@ Board::Board(const Difficulty& difficulty, Graphics& gfx)
 void Board::Draw(Graphics& gfx)
 {
 	const Rect ClockRect = { {GetRect().right - 64 - nBorderThickness, GetRect().top - 25 - nBorderThickness * 3 / 2}, 64 + nBorderThickness, 25 + nBorderThickness };
-	const Rect MineCountRect = { {GetRect().left, GetRect().top - 25 - nBorderThickness * 3 / 2}, 43 + nBorderThickness, 25 + nBorderThickness };
 	for (int i = 0; i < tile.size(); i++) tile[i]->Draw(bGameOver, topleft, gfx);
 	gfx.DrawRectEmpty(GetRect().left, GetRect().top, GetRect().right - GetRect().left, GetRect().bottom - GetRect().top, -nBorderThickness, { 48, 48, 48 });
 	gfx.DrawRect(GetRect().left - nBorderThickness, GetRect().top - nBorderThickness * 2 - 25, GetRect().right + nBorderThickness, GetRect().top, { 48, 48, 48 });
-	gfx.DrawRectDim(ClockRect.left, ClockRect.top, ClockRect.GetWidth(), ClockRect.GetHeight(), Colors::Gray);
-	numb.DrawClock(ClockRect.left + nBorderThickness / 2, ClockRect.top + nBorderThickness / 2, fElapsedTime, Colors::Yellow, gfx);
-	gfx.DrawRectDim(MineCountRect.left, MineCountRect.top, MineCountRect.GetWidth(), MineCountRect.GetHeight(), Colors::Gray);
-	numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, nMines, Colors::Black, gfx);
+	gfx.DrawRectDim(ClockRect.left, ClockRect.top, ClockRect.GetWidth(), ClockRect.GetHeight(), Colors::Black);
+	numb.DrawClock(ClockRect.left + nBorderThickness / 2, ClockRect.top + nBorderThickness / 2, fElapsedTime, Colors::Red, gfx);
+
+	Rect MineCountRect;
+	if (nMines >= 100)
+	{
+		MineCountRect = { {GetRect().left, GetRect().top - 25 - nBorderThickness * 3 / 2}, 43 + nBorderThickness, 25 + nBorderThickness };
+		gfx.DrawRectDim(MineCountRect.left, MineCountRect.top, MineCountRect.GetWidth(), MineCountRect.GetHeight(), Colors::Black);
+		numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, 888, Colors::Red * 0.3f, gfx);
+		if (nMines - nFlaggedTiles >= 100) numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, std::max(0, nMines - nFlaggedTiles), Colors::Red, gfx);
+		else if (nMines - nFlaggedTiles >= 10)
+		{
+			numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, 0, Colors::Red, gfx);
+			numb.Draw(MineCountRect.left + nBorderThickness / 2 + 15, MineCountRect.top + nBorderThickness / 2, std::max(0, nMines - nFlaggedTiles), Colors::Red, gfx);
+		}
+		else
+		{
+			numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, 0, Colors::Red, gfx);
+			numb.Draw(MineCountRect.left + nBorderThickness / 2 + 15, MineCountRect.top + nBorderThickness / 2, 0, Colors::Red, gfx);
+			numb.Draw(MineCountRect.left + nBorderThickness / 2 + 30, MineCountRect.top + nBorderThickness / 2, std::max(0, nMines - nFlaggedTiles), Colors::Red, gfx);
+		}
+	}
+	else if (nMines >= 10)
+	{
+		MineCountRect = { {GetRect().left, GetRect().top - 25 - nBorderThickness * 3 / 2}, 28 + nBorderThickness, 25 + nBorderThickness };
+		gfx.DrawRectDim(MineCountRect.left, MineCountRect.top, MineCountRect.GetWidth(), MineCountRect.GetHeight(), Colors::Black);
+		numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, 88, Colors::Red * 0.3f, gfx);
+		if (nMines - nFlaggedTiles >= 10) numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, std::max(0, nMines - nFlaggedTiles), Colors::Red, gfx);
+		else
+		{
+			numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, 0, Colors::Red, gfx);
+			numb.Draw(MineCountRect.left + nBorderThickness / 2 + 15, MineCountRect.top + nBorderThickness / 2, std::max(0, nMines - nFlaggedTiles), Colors::Red, gfx);
+		}
+	}
+	else
+	{
+		MineCountRect = { {GetRect().left, GetRect().top - 25 - nBorderThickness * 3 / 2}, 13 + nBorderThickness, 25 + nBorderThickness };
+		gfx.DrawRectDim(MineCountRect.left, MineCountRect.top, MineCountRect.GetWidth(), MineCountRect.GetHeight(), Colors::Black);
+		numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, 8, Colors::Red * 0.3f, gfx);
+		numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, std::max(0, nMines - nFlaggedTiles), Colors::Red, gfx);
+	}
 }
 
 void Board::Update(Mouse& mouse)
 {
 	const float dt = ft.Mark();
+	bGameOver = bGameWon || bGameLost;
+	if (nRevealedTiles == tile.size() - nMines) bGameWon = true;
 	if (!bGameOver)
 	{
-		fElapsedTime += dt;
+		if (bStartClock) fElapsedTime += dt;
 		for (int i = 0; i < tile.size(); i++)
 		{
 			tile[i]->Update(mouse);
@@ -82,9 +120,11 @@ void Board::Update(Mouse& mouse)
 				else if (mouse.LeftIsPressed() && !bLMB_inhibited && tile[i]->state == Tile::State::Hidden)
 				{
 					RevealTile(i);
+					if (!bStartClock) bStartClock = true;
 				}
-				else if (mouse.RightIsPressed() && !bRMB_inhibited) tile[i]->ToggleFlag();
+				else if (mouse.RightIsPressed() && !bRMB_inhibited) ToggleFlagTile(i);
 			}
+			if (tile[i]->state == Tile::State::Hidden && bGameWon) tile[i]->state = Tile::State::Flagged;
 		}
 	}
 
@@ -134,8 +174,16 @@ int Board::CountNeighborFlags(int tileIndex)
 void Board::RevealTile(int tileIndex)
 {
 	tile[tileIndex]->Reveal();
+	nRevealedTiles++;
 	if (tile[tileIndex]->nNeighborMines == 0) RevealNeighborTiles(tileIndex);
-	if (tile[tileIndex]->bHasMine) bGameOver = true;
+	if (tile[tileIndex]->bHasMine) bGameLost = true;
+}
+
+void Board::ToggleFlagTile(int tileIndex)
+{
+	tile[tileIndex]->ToggleFlag();
+	if (tile[tileIndex]->state == Tile::State::Flagged) nFlaggedTiles++;
+	else if (tile[tileIndex]->state == Tile::State::Hidden) nFlaggedTiles--;
 }
 
 void Board::RevealNeighborTiles(int tileIndex)
