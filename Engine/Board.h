@@ -33,7 +33,7 @@ private:
 		Tile() = default;
 		Tile(const Location& gridLoc, const Location& board_topleft);
 
-		void Draw(const Location& topleft, Graphics& gfx);
+		void Draw(bool GameOver, const Location& topleft, Graphics& gfx);
 		void Reveal();
 		void ToggleFlag();
 		void Update(Mouse& mouse);
@@ -74,7 +74,7 @@ private:
 	static constexpr int nBorderThickness = 8;
 	bool bLMB_inhibited = false;
 	bool bRMB_inhibited = false;
-
+	bool bGameOver = false;
 	float fElapsedTime = 0;
 };
 

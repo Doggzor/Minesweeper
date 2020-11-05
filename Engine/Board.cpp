@@ -54,34 +54,37 @@ void Board::Draw(Graphics& gfx)
 {
 	const Rect ClockRect = { {GetRect().right - 64 - nBorderThickness, GetRect().top - 25 - nBorderThickness * 3 / 2}, 64 + nBorderThickness, 25 + nBorderThickness };
 	const Rect MineCountRect = { {GetRect().left, GetRect().top - 25 - nBorderThickness * 3 / 2}, 43 + nBorderThickness, 25 + nBorderThickness };
-	for (int i = 0; i < tile.size(); i++) tile[i]->Draw(topleft, gfx);
+	for (int i = 0; i < tile.size(); i++) tile[i]->Draw(bGameOver, topleft, gfx);
 	gfx.DrawRectEmpty(GetRect().left, GetRect().top, GetRect().right - GetRect().left, GetRect().bottom - GetRect().top, -nBorderThickness, { 48, 48, 48 });
 	gfx.DrawRect(GetRect().left - nBorderThickness, GetRect().top - nBorderThickness * 2 - 25, GetRect().right + nBorderThickness, GetRect().top, { 48, 48, 48 });
 	gfx.DrawRectDim(ClockRect.left, ClockRect.top, ClockRect.GetWidth(), ClockRect.GetHeight(), Colors::Gray);
 	numb.DrawClock(ClockRect.left + nBorderThickness / 2, ClockRect.top + nBorderThickness / 2, fElapsedTime, Colors::Yellow, gfx);
 	gfx.DrawRectDim(MineCountRect.left, MineCountRect.top, MineCountRect.GetWidth(), MineCountRect.GetHeight(), Colors::Gray);
-	numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, nMines, c, gfx);
+	numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, nMines, Colors::Black, gfx);
 }
 
 void Board::Update(Mouse& mouse)
 {
 	const float dt = ft.Mark();
-	fElapsedTime += dt;
-	for (int i = 0; i < tile.size(); i++)
+	if (!bGameOver)
 	{
-		tile[i]->Update(mouse);
-		if (tile[i]->bHovered)
+		fElapsedTime += dt;
+		for (int i = 0; i < tile.size(); i++)
 		{
-			if (mouse.LeftIsPressed() && mouse.RightIsPressed())
+			tile[i]->Update(mouse);
+			if (tile[i]->bHovered)
 			{
-				if ((!bLMB_inhibited || !bRMB_inhibited) && tile[i]->state == Tile::State::Revealed && CountNeighborMines(i) == CountNeighborFlags(i) && CountNeighborMines(i) != 0) RevealNeighborTiles(i);
-				else PressNeighborTiles(i);
+				if (mouse.LeftIsPressed() && mouse.RightIsPressed())
+				{
+					if ((!bLMB_inhibited || !bRMB_inhibited) && tile[i]->state == Tile::State::Revealed && CountNeighborMines(i) == CountNeighborFlags(i) && CountNeighborMines(i) != 0) RevealNeighborTiles(i);
+					else PressNeighborTiles(i);
+				}
+				else if (mouse.LeftIsPressed() && !bLMB_inhibited && tile[i]->state == Tile::State::Hidden)
+				{
+					RevealTile(i);
+				}
+				else if (mouse.RightIsPressed() && !bRMB_inhibited) tile[i]->ToggleFlag();
 			}
-			else if (mouse.LeftIsPressed() && !bLMB_inhibited && tile[i]->state == Tile::State::Hidden)
-			{
-				RevealTile(i);
-			}
-			else if (mouse.RightIsPressed() && !bRMB_inhibited) tile[i]->ToggleFlag();
 		}
 	}
 
@@ -132,6 +135,7 @@ void Board::RevealTile(int tileIndex)
 {
 	tile[tileIndex]->Reveal();
 	if (tile[tileIndex]->nNeighborMines == 0) RevealNeighborTiles(tileIndex);
+	if (tile[tileIndex]->bHasMine) bGameOver = true;
 }
 
 void Board::RevealNeighborTiles(int tileIndex)
@@ -179,18 +183,20 @@ Board::Tile::Tile(const Location& gridLoc, const Location& board_topleft)
 	rect = { board_topleft + gridLoc * size, size, size };
 }
 
-void Board::Tile::Draw(const Location& topleft, Graphics& gfx)
+void Board::Tile::Draw(bool GameOver, const Location& topleft, Graphics& gfx)
 {
 	const Location screenLoc = topleft + gridLoc * size;
 	switch (state)
 	{
 	case State::Hidden:
-		if (bHovered) img::tile_hidden_hovered(screenLoc, gfx);
+		if (GameOver && bHasMine) img::tile_mine_revealed(screenLoc, gfx);
+		else if (bHovered) img::tile_hidden_hovered(screenLoc, gfx);
 		else if (bPressed) img::tile_empty(screenLoc, gfx);
 		else img::tile_hidden(screenLoc, gfx);
 		break;
 	case State::Flagged:
-		if (bHovered) img::tile_flagged_hovered(screenLoc, gfx);
+		if (GameOver && !bHasMine) img::tile_mine_false(screenLoc, gfx);
+		else if (bHovered) img::tile_flagged_hovered(screenLoc, gfx);
 		else img::tile_flagged(screenLoc, gfx);
 		break;
 	case State::Revealed:
