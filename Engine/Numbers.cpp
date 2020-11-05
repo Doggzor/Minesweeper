@@ -182,6 +182,34 @@ void Numbers::Draw(int x, int y, int num, Color c, Graphics& gfx) const
 		drawnum9(offsetneg + x, y, c,  gfx);
 }
 
+void Numbers::DrawClock(int x, int y, float time, Color c, Graphics& gfx) const
+{
+	const int offset_numb = 15;
+	const int offset_doubledot = 6;
+	int minutes = (int)time / 60;
+	int seconds;
+	if (minutes < 100) seconds = (int)time % 60;
+	else seconds = 59;
+
+	if (minutes >= 99) minutes = 99;
+
+	if (minutes < 10)
+	{
+		drawnum0(x, y, c, gfx);
+		Draw(x + offset_numb, y, minutes, c, gfx);
+	}
+	else Draw(x, y, minutes, c, gfx);
+
+	draw_doubledot(x + offset_numb * 2, y, c, gfx);
+
+	if (seconds < 10)
+	{
+		drawnum0(x + offset_numb * 2 + offset_doubledot, y, c, gfx);
+		Draw(x + offset_numb * 3 + offset_doubledot, y, seconds, c, gfx);
+	}
+	else Draw(x + offset_numb * 2 + offset_doubledot, y, seconds, c, gfx);
+}
+
 void Numbers::drawnum0(int x, int y, Color c, Graphics& gfx) const
 {
 	gfx.PutPixel(1 + x, 0 + y,   c);
@@ -1602,5 +1630,42 @@ void Numbers::draw_comma(int x, int y, Color c, Graphics& gfx) const
 	gfx.PutPixel(2 + x, 4 + y, c);
 	gfx.PutPixel(3 + x, 4 + y, c);
 	gfx.PutPixel(3 + x, 5 + y, c);
+}
+
+void Numbers::draw_doubledot(int x, int y, Color c, Graphics& gfx) const
+{
+	gfx.PutPixel(0 + x, 6 + y, c);
+	gfx.PutPixel(1 + x, 6 + y, c);
+	gfx.PutPixel(2 + x, 6 + y, c);
+	gfx.PutPixel(3 + x, 6 + y, c);
+	gfx.PutPixel(0 + x, 7 + y, c);
+	gfx.PutPixel(1 + x, 7 + y, c);
+	gfx.PutPixel(2 + x, 7 + y, c);
+	gfx.PutPixel(3 + x, 7 + y, c);
+	gfx.PutPixel(0 + x, 8 + y, c);
+	gfx.PutPixel(1 + x, 8 + y, c);
+	gfx.PutPixel(2 + x, 8 + y, c);
+	gfx.PutPixel(3 + x, 8 + y, c);
+	gfx.PutPixel(0 + x, 9 + y, c);
+	gfx.PutPixel(1 + x, 9 + y, c);
+	gfx.PutPixel(2 + x, 9 + y, c);
+	gfx.PutPixel(3 + x, 9 + y, c);
+	gfx.PutPixel(0 + x, 19 + y, c);
+	gfx.PutPixel(1 + x, 19 + y, c);
+	gfx.PutPixel(2 + x, 19 + y, c);
+	gfx.PutPixel(3 + x, 19 + y, c);
+	gfx.PutPixel(0 + x, 20 + y, c);
+	gfx.PutPixel(1 + x, 20 + y, c);
+	gfx.PutPixel(2 + x, 20 + y, c);
+	gfx.PutPixel(3 + x, 20 + y, c);
+	gfx.PutPixel(0 + x, 21 + y, c);
+	gfx.PutPixel(1 + x, 21 + y, c);
+	gfx.PutPixel(2 + x, 21 + y, c);
+	gfx.PutPixel(3 + x, 21 + y, c);
+	gfx.PutPixel(0 + x, 22 + y, c);
+	gfx.PutPixel(1 + x, 22 + y, c);
+	gfx.PutPixel(2 + x, 22 + y, c);
+	gfx.PutPixel(3 + x, 22 + y, c);
+
 }
 

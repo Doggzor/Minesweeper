@@ -46,7 +46,9 @@ private:
 	/********************************/
 	/*  User Variables              */
     FrameTimer ft;
+	Numbers numb;
 
 	Board board;
+	float fElapsedTime = 0;
 	/********************************/
 };
