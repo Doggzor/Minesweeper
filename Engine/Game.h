@@ -46,7 +46,6 @@ private:
 	/********************************/
 	/*  User Variables              */
     FrameTimer ft;
-	Location pointer;
 
 	Board board;
 	/********************************/

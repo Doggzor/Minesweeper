@@ -34,12 +34,13 @@ private:
 		void Draw(const Location& topleft, Graphics& gfx);
 		void Reveal();
 		void ToggleFlag();
-		void Update(const Location& pointer);
+		void Update(Mouse& mouse);
 		State state = State::Hidden;
 		Location gridLoc;
 		Rect rect;
 		bool bHasMine = false;
 		bool bHovered = false;
+		bool bPressed = false;
 		int nNeighborMines = 0;
 		int nNeighborFlags = 0;
 
@@ -50,13 +51,14 @@ public:
 	Board(const Difficulty& difficulty, Graphics& gfx);
 
 	void Draw(Graphics& gfx);
-	void Update(Mouse& mouse, const Location& pointer);
+	void Update(Mouse& mouse);
 private:
 	int GetIndex(const Location& gridLoc);
 	int CountNeighborMines(int tileIndex);
 	int CountNeighborFlags(int tileIndex);
 	void RevealTile(int tileIndex);
 	void RevealNeighborTiles(int tileIndex);
+	void PressNeighborTiles(int tileIndex);
 private:
 	Difficulty diff = Difficulty::Medium;
 	Location topleft;

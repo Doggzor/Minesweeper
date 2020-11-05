@@ -55,18 +55,23 @@ void Board::Draw(Graphics& gfx)
 	for (int i = 0; i < tile.size(); i++) tile[i]->Draw(topleft, gfx);
 }
 
-void Board::Update(Mouse& mouse, const Location& pointer)
+void Board::Update(Mouse& mouse)
 {
 	for (int i = 0; i < tile.size(); i++)
 	{
-		tile[i]->Update(pointer);
+		tile[i]->Update(mouse);
 		if (tile[i]->bHovered)
 		{
-			if (mouse.LeftIsPressed() && !bLMB_inhibited && tile[i]->state == Tile::State::Hidden)
+			if (mouse.LeftIsPressed() && mouse.RightIsPressed())
+			{
+				if ((!bLMB_inhibited || !bRMB_inhibited) && tile[i]->state == Tile::State::Revealed && CountNeighborMines(i) == CountNeighborFlags(i) && CountNeighborMines(i) != 0) RevealNeighborTiles(i);
+				else PressNeighborTiles(i);
+			}
+			else if (mouse.LeftIsPressed() && !bLMB_inhibited && tile[i]->state == Tile::State::Hidden)
 			{
 				RevealTile(i);
 			}
-			if (mouse.RightIsPressed() && !bRMB_inhibited) tile[i]->ToggleFlag();
+			else if (mouse.RightIsPressed() && !bRMB_inhibited) tile[i]->ToggleFlag();
 		}
 	}
 
@@ -135,6 +140,23 @@ void Board::RevealNeighborTiles(int tileIndex)
 	}
 }
 
+void Board::PressNeighborTiles(int tileIndex)
+{
+	const int startX = std::max(0, tile[tileIndex]->gridLoc.x - 1);
+	const int endX = std::min(nColumns - 1, tile[tileIndex]->gridLoc.x + 1);
+	const int startY = std::max(0, tile[tileIndex]->gridLoc.y - 1);
+	const int endY = std::min(nRows - 1, tile[tileIndex]->gridLoc.y + 1);
+
+	for (int i = 0; i < tile.size(); i++) tile[i]->bPressed = false;
+	for (int y = startY; y <= endY; y++)
+	{
+		for (int x = startX; x <= endX; x++)
+		{
+			if (tile[GetIndex({ x, y })]->state == Tile::State::Hidden && GetIndex({ x, y }) != tileIndex) tile[GetIndex({ x, y })]->bPressed = true;
+		}
+	}
+}
+
 Board::Tile::Tile(const Location& gridLoc, const Location& board_topleft)
 	:
 	gridLoc(gridLoc)
@@ -149,6 +171,7 @@ void Board::Tile::Draw(const Location& topleft, Graphics& gfx)
 	{
 	case State::Hidden:
 		if (bHovered) img::tile_hidden_hovered(screenLoc, gfx);
+		else if (bPressed) img::tile_empty(screenLoc, gfx);
 		else img::tile_hidden(screenLoc, gfx);
 		break;
 	case State::Flagged:
@@ -181,7 +204,8 @@ void Board::Tile::ToggleFlag()
 	else if (state == State::Flagged) state = State::Hidden;
 }
 
-void Board::Tile::Update(const Location& pointer)
+void Board::Tile::Update(Mouse& mouse)
 {
-	bHovered = rect.isContaining(pointer);
+	bHovered = rect.isContaining(mouse.GetPos());
+	if (!mouse.LeftIsPressed() || !mouse.RightIsPressed()) bPressed = false;
 }
