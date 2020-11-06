@@ -20,5 +20,10 @@ public:
 	static void tile_num6(const Location& topleft, Graphics& gfx);
 	static void tile_num7(const Location& topleft, Graphics& gfx);
 	static void tile_num8(const Location& topleft, Graphics& gfx);
+	static void smiley_smile(const Location& topleft, Graphics& gfx);
+	static void smiley_shock(const Location& topleft, Graphics& gfx);
+	static void smiley_dead(const Location& topleft, Graphics& gfx);
+	static void smiley_cool(const Location& topleft, Graphics& gfx);
+	static void mine_icon(const Location& topleft, Graphics& gfx);
 };
 

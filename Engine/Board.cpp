@@ -25,7 +25,7 @@ Board::Board(const Difficulty& difficulty, Graphics& gfx)
 	case Difficulty::VeryHard:
 		nColumns = 40;
 		nRows = 32;
-		nMines = 150;
+		nMines = 300;
 		break;
 	}
 	topleft = gfx.Center() - (Location(nColumns, nRows) / 2) * Tile::size;
@@ -54,15 +54,17 @@ void Board::Draw(Graphics& gfx)
 {
 	const Rect ClockRect = { {GetRect().right - 64 - nBorderThickness, GetRect().top - 25 - nBorderThickness * 3 / 2}, 64 + nBorderThickness, 25 + nBorderThickness };
 	for (int i = 0; i < tile.size(); i++) tile[i]->Draw(bGameOver, topleft, gfx);
-	gfx.DrawRectEmpty(GetRect().left, GetRect().top, GetRect().right - GetRect().left, GetRect().bottom - GetRect().top, -nBorderThickness, { 48, 48, 48 });
-	gfx.DrawRect(GetRect().left - nBorderThickness, GetRect().top - nBorderThickness * 2 - 25, GetRect().right + nBorderThickness, GetRect().top, { 48, 48, 48 });
+	gfx.DrawRectEmpty(GetRect().left, GetRect().top, GetRect().right - GetRect().left, GetRect().bottom - GetRect().top, -nBorderThickness, { 48, 48, 48 }); //Border
+	gfx.DrawRect(GetRect().left - nBorderThickness, GetRect().top - nBorderThickness * 2 - 25, GetRect().right + nBorderThickness, GetRect().top, { 48, 48, 48 }); //Top Border extra
 	gfx.DrawRectDim(ClockRect.left, ClockRect.top, ClockRect.GetWidth(), ClockRect.GetHeight(), Colors::Black);
 	numb.DrawClock(ClockRect.left + nBorderThickness / 2, ClockRect.top + nBorderThickness / 2, fElapsedTime, Colors::Red, gfx);
 
+	const Location mine_icon_topleft = { GetRect().left, GetRect().top - 25 - nBorderThickness };
+	img::mine_icon(mine_icon_topleft, gfx);
 	Rect MineCountRect;
 	if (nMines >= 100)
 	{
-		MineCountRect = { {GetRect().left, GetRect().top - 25 - nBorderThickness * 3 / 2}, 43 + nBorderThickness, 25 + nBorderThickness };
+		MineCountRect = { {GetRect().left + 27, GetRect().top - 25 - nBorderThickness * 3 / 2}, 43 + nBorderThickness, 25 + nBorderThickness };
 		gfx.DrawRectDim(MineCountRect.left, MineCountRect.top, MineCountRect.GetWidth(), MineCountRect.GetHeight(), Colors::Black);
 		numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, 888, Colors::Red * 0.3f, gfx);
 		if (nMines - nFlaggedTiles >= 100) numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, std::max(0, nMines - nFlaggedTiles), Colors::Red, gfx);
@@ -80,7 +82,7 @@ void Board::Draw(Graphics& gfx)
 	}
 	else if (nMines >= 10)
 	{
-		MineCountRect = { {GetRect().left, GetRect().top - 25 - nBorderThickness * 3 / 2}, 28 + nBorderThickness, 25 + nBorderThickness };
+		MineCountRect = { {GetRect().left + 27, GetRect().top - 25 - nBorderThickness * 3 / 2}, 28 + nBorderThickness, 25 + nBorderThickness };
 		gfx.DrawRectDim(MineCountRect.left, MineCountRect.top, MineCountRect.GetWidth(), MineCountRect.GetHeight(), Colors::Black);
 		numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, 88, Colors::Red * 0.3f, gfx);
 		if (nMines - nFlaggedTiles >= 10) numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, std::max(0, nMines - nFlaggedTiles), Colors::Red, gfx);
@@ -92,11 +94,20 @@ void Board::Draw(Graphics& gfx)
 	}
 	else
 	{
-		MineCountRect = { {GetRect().left, GetRect().top - 25 - nBorderThickness * 3 / 2}, 13 + nBorderThickness, 25 + nBorderThickness };
+		MineCountRect = { {GetRect().left + 27, GetRect().top - 25 - nBorderThickness * 3 / 2}, 13 + nBorderThickness, 25 + nBorderThickness };
 		gfx.DrawRectDim(MineCountRect.left, MineCountRect.top, MineCountRect.GetWidth(), MineCountRect.GetHeight(), Colors::Black);
 		numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, 8, Colors::Red * 0.3f, gfx);
 		numb.Draw(MineCountRect.left + nBorderThickness / 2, MineCountRect.top + nBorderThickness / 2, std::max(0, nMines - nFlaggedTiles), Colors::Red, gfx);
 	}
+
+	const Location smiley_topleft = { MineCountRect.right + (ClockRect.left - MineCountRect.right) / 2 - 12, GetRect().top - 25 - nBorderThickness };
+	if (!bGameOver)
+	{
+		if (bShockSmiley) img::smiley_shock(smiley_topleft, gfx);
+		else img::smiley_smile(smiley_topleft, gfx);
+	}
+	else if (bGameLost) img::smiley_dead(smiley_topleft, gfx);
+	else img::smiley_cool(smiley_topleft, gfx);
 }
 
 void Board::Update(Mouse& mouse)
@@ -107,6 +118,8 @@ void Board::Update(Mouse& mouse)
 	if (!bGameOver)
 	{
 		if (bStartClock) fElapsedTime += dt;
+		bShockSmiley = fSmileyShockTimer > 0;
+		if (fSmileyShockTimer > 0) fSmileyShockTimer -= dt;
 		for (int i = 0; i < tile.size(); i++)
 		{
 			tile[i]->Update(mouse);
@@ -177,6 +190,7 @@ void Board::RevealTile(int tileIndex)
 	nRevealedTiles++;
 	if (tile[tileIndex]->nNeighborMines == 0) RevealNeighborTiles(tileIndex);
 	if (tile[tileIndex]->bHasMine) bGameLost = true;
+	ShockSmiley();;
 }
 
 void Board::ToggleFlagTile(int tileIndex)
@@ -214,9 +228,18 @@ void Board::PressNeighborTiles(int tileIndex)
 	{
 		for (int x = startX; x <= endX; x++)
 		{
-			if (tile[GetIndex({ x, y })]->state == Tile::State::Hidden && GetIndex({ x, y }) != tileIndex) tile[GetIndex({ x, y })]->bPressed = true;
+			if (tile[GetIndex({ x, y })]->state == Tile::State::Hidden && GetIndex({ x, y }) != tileIndex)
+			{
+				tile[GetIndex({ x, y })]->bPressed = true;
+				ShockSmiley();
+			}
 		}
 	}
+}
+
+void Board::ShockSmiley()
+{
+	fSmileyShockTimer = 0.225f;
 }
 
 const Rect Board::GetRect() const

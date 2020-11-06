@@ -62,6 +62,7 @@ private:
 	void ToggleFlagTile(int tileIndex);
 	void RevealNeighborTiles(int tileIndex);
 	void PressNeighborTiles(int tileIndex);
+	void ShockSmiley();
 	const Rect GetRect() const;
 private:
 	FrameTimer ft;
@@ -77,6 +78,8 @@ private:
 	static constexpr int nBorderThickness = 8;
 	bool bLMB_inhibited = false;
 	bool bRMB_inhibited = false;
+	bool bShockSmiley = false;
+	float fSmileyShockTimer = 0;
 	bool bGameWon = false;
 	bool bGameLost = false;
 	bool bGameOver = false;
