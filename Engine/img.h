@@ -25,5 +25,21 @@ public:
 	static void smiley_dead(const Location& topleft, Graphics& gfx);
 	static void smiley_cool(const Location& topleft, Graphics& gfx);
 	static void mine_icon(const Location& topleft, Graphics& gfx);
+	static void button(const Location& topleft, bool hovered, Graphics& gfx);
+	static void button_text_small(const Location& topleft, Graphics& gfx);
+	static void button_text_medium(const Location& topleft, Graphics& gfx);
+	static void button_text_large(const Location& topleft, Graphics& gfx);
+	static void button_text_XL(const Location& topleft, Graphics& gfx);
+	static void button_text_custom(const Location& topleft, Graphics& gfx);
+	static void button_text_go(const Location& topleft, Graphics& gfx);
+	static void button_increase_empty(const Location& topleft, Graphics& gfx);
+	static void button_increase_hovered(const Location& topleft, Graphics& gfx);
+	static void button_increase_pressed(const Location& topleft, Graphics& gfx);
+	static void button_decrease_empty(const Location& topleft, Graphics& gfx);
+	static void button_decrease_hovered(const Location& topleft, Graphics& gfx);
+	static void button_decrease_pressed(const Location& topleft, Graphics& gfx);
+	static void text_columns(const Location& topleft, Graphics& gfx);
+	static void text_rows(const Location& topleft, Graphics& gfx);
+	static void text_mines(const Location& topleft, Graphics& gfx);
 };
 

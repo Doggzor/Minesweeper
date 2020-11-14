@@ -147,6 +147,7 @@
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="img.h" />
     <ClInclude Include="Location.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="Numbers.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="rng.h" />
@@ -169,6 +170,7 @@
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Numbers.cpp" />
     <ClCompile Include="Sound.cpp" />

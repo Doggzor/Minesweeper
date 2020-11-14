@@ -25,7 +25,7 @@ Game::Game( MainWindow& wnd )
 	:
 	wnd( wnd ),
 	gfx( wnd ),
-	board(Board::Difficulty::Easy, gfx)
+	menu(gfx.Center() - Location(Menu::btn_width / 2, Menu::btn_height / 2 * 5))
 {
 }
 
@@ -39,11 +39,42 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
-	board.Update(wnd.mouse);
+	switch (state)
+	{
+	case State::Selection:
+		if (!menu.isInitialized()) menu.Update(wnd.mouse);
+		else if (menu.isInitialized() && board == nullptr)
+		{
+			board = new Board(menu.getColumns(), menu.getRows(), menu.getMines(), gfx);
+			state = State::Playing;
+		}
+		break;
+	case State::Playing:
+		board->Update(wnd.mouse);
+		if (board->isGameOver())
+		{
+				if(wnd.mouse.LeftIsPressed() && !bLMB_inhibited) state = State::Over;
+				else if (wnd.mouse.RightIsPressed() && !bRMB_inhibited)
+				{
+					state = State::Over;
+					menu.Reset();
+				}
+		}
+		break;
+	case State::Over:
+			delete board;
+			board = nullptr;
+			state = State::Selection;
+		break;
+	}
+
+	bLMB_inhibited = wnd.mouse.LeftIsPressed();
+	bRMB_inhibited = wnd.mouse.RightIsPressed();
 }
 
 void Game::ComposeFrame()
 {
-	board.Draw(gfx);
+	if (!menu.isInitialized()) menu.Draw(gfx);
+	if (state != State::Selection) board->Draw(gfx);
 }
 

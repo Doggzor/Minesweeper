@@ -10,15 +10,6 @@
 #include <memory>
 class Board
 {
-public:
-	enum class Difficulty
-	{
-		Easy,
-		Medium,
-		Hard,
-		VeryHard
-	};
-
 private:
 	class Tile
 	{
@@ -50,10 +41,11 @@ private:
 	};
 
 public:
-	Board(const Difficulty& difficulty, Graphics& gfx);
+	Board(int columns, int rows, int mines, Graphics& gfx);
 
 	void Draw(Graphics& gfx);
 	void Update(Mouse& mouse);
+	bool isGameOver();
 private:
 	int GetIndex(const Location& gridLoc);
 	int CountNeighborMines(int tileIndex);
@@ -67,7 +59,6 @@ private:
 private:
 	FrameTimer ft;
 	Numbers numb;
-	Difficulty diff = Difficulty::Medium;
 	Location topleft;
 	std::vector< std::unique_ptr < Tile > > tile;
 	int nColumns = 0;
@@ -85,5 +76,6 @@ private:
 	bool bGameOver = false;
 	float fElapsedTime = 0;
 	bool bStartClock = false;
+	bool bReady = false;
 };
 

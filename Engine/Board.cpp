@@ -1,41 +1,19 @@
 
 #include "Board.h"
 
-Board::Board(const Difficulty& difficulty, Graphics& gfx)
+Board::Board(int columns, int rows, int mines, Graphics& gfx)
 	:
-	diff(difficulty)
+	nColumns(columns),
+	nRows(rows),
+	nMines(mines)
 {
-	switch (diff)
-	{
-	case Difficulty::Easy:
-		nColumns = 10;
-		nRows = 8;
-		nMines = 9;
-		break;
-	case Difficulty::Medium:
-		nColumns = 20;
-		nRows = 16;
-		nMines = 50;
-		break;
-	case Difficulty::Hard:
-		nColumns = 30;
-		nRows = 24;
-		nMines = 150;
-		break;
-	case Difficulty::VeryHard:
-		nColumns = 40;
-		nRows = 32;
-		nMines = 300;
-		break;
-	}
-	topleft = gfx.Center() - (Location(nColumns, nRows) / 2) * Tile::size;
+	topleft = gfx.Center() - (Location(nColumns, nRows) / 2) * Tile::size + Location(-nBorderThickness, 25 - nBorderThickness);
 
 	//Create tiles
 	for (int y = 0; y < nRows; y++)
 	{
 		for (int x = 0; x < nColumns; x++) {
 			tile.push_back(std::make_unique <Tile>(Location(x, y), topleft));
-			//if (x == 0 || x == nColumns - 1 || y == 0 || y == nRows - 1) tile[GetIndex({ x, y })]->bHasMine = true;  //Mine border :O
 		}
 	}
 	//Spawn mines
@@ -112,37 +90,46 @@ void Board::Draw(Graphics& gfx)
 
 void Board::Update(Mouse& mouse)
 {
-	const float dt = ft.Mark();
-	bGameOver = bGameWon || bGameLost;
-	if (nRevealedTiles == tile.size() - nMines) bGameWon = true;
-	if (!bGameOver)
+	if (!bReady && !mouse.LeftIsPressed()) bReady = true;
+	else if (bReady)
 	{
-		if (bStartClock) fElapsedTime += dt;
-		bShockSmiley = fSmileyShockTimer > 0;
-		if (fSmileyShockTimer > 0) fSmileyShockTimer -= dt;
-		for (int i = 0; i < tile.size(); i++)
+		const float dt = ft.Mark();
+		bGameOver = bGameWon || bGameLost;
+		if (nRevealedTiles == tile.size() - nMines) bGameWon = true;
+		if (!bGameOver)
 		{
-			tile[i]->Update(mouse);
-			if (tile[i]->bHovered)
+			if (bStartClock) fElapsedTime += dt;
+			bShockSmiley = fSmileyShockTimer > 0;
+			if (fSmileyShockTimer > 0) fSmileyShockTimer -= dt;
+			for (int i = 0; i < tile.size(); i++)
 			{
-				if (mouse.LeftIsPressed() && mouse.RightIsPressed())
+				tile[i]->Update(mouse);
+				if (tile[i]->bHovered)
 				{
-					if ((!bLMB_inhibited || !bRMB_inhibited) && tile[i]->state == Tile::State::Revealed && CountNeighborMines(i) == CountNeighborFlags(i) && CountNeighborMines(i) != 0) RevealNeighborTiles(i);
-					else PressNeighborTiles(i);
+					if (mouse.LeftIsPressed() && mouse.RightIsPressed())
+					{
+						if ((!bLMB_inhibited || !bRMB_inhibited) && tile[i]->state == Tile::State::Revealed && CountNeighborMines(i) == CountNeighborFlags(i) && CountNeighborMines(i) != 0) RevealNeighborTiles(i);
+						else PressNeighborTiles(i);
+					}
+					else if (mouse.LeftIsPressed() && !bLMB_inhibited && tile[i]->state == Tile::State::Hidden)
+					{
+						RevealTile(i);
+						if (!bStartClock) bStartClock = true;
+					}
+					else if (mouse.RightIsPressed() && !bRMB_inhibited) ToggleFlagTile(i);
 				}
-				else if (mouse.LeftIsPressed() && !bLMB_inhibited && tile[i]->state == Tile::State::Hidden)
-				{
-					RevealTile(i);
-					if (!bStartClock) bStartClock = true;
-				}
-				else if (mouse.RightIsPressed() && !bRMB_inhibited) ToggleFlagTile(i);
+				if (tile[i]->state == Tile::State::Hidden && bGameWon) tile[i]->state = Tile::State::Flagged;
 			}
-			if (tile[i]->state == Tile::State::Hidden && bGameWon) tile[i]->state = Tile::State::Flagged;
 		}
-	}
 
-	bLMB_inhibited = mouse.LeftIsPressed();
-	bRMB_inhibited = mouse.RightIsPressed();
+		bLMB_inhibited = mouse.LeftIsPressed();
+		bRMB_inhibited = mouse.RightIsPressed();
+	}
+}
+
+bool Board::isGameOver()
+{
+	return bGameOver;
 }
 
 int Board::GetIndex(const Location& gridLoc)
@@ -228,7 +215,7 @@ void Board::PressNeighborTiles(int tileIndex)
 	{
 		for (int x = startX; x <= endX; x++)
 		{
-			if (tile[GetIndex({ x, y })]->state == Tile::State::Hidden && GetIndex({ x, y }) != tileIndex)
+			if (tile[GetIndex({ x, y })]->state == Tile::State::Hidden)
 			{
 				tile[GetIndex({ x, y })]->bPressed = true;
 				ShockSmiley();
@@ -261,8 +248,8 @@ void Board::Tile::Draw(bool GameOver, const Location& topleft, Graphics& gfx)
 	{
 	case State::Hidden:
 		if (GameOver && bHasMine) img::tile_mine_revealed(screenLoc, gfx);
-		else if (bHovered) img::tile_hidden_hovered(screenLoc, gfx);
 		else if (bPressed) img::tile_empty(screenLoc, gfx);
+		else if (bHovered) img::tile_hidden_hovered(screenLoc, gfx);
 		else img::tile_hidden(screenLoc, gfx);
 		break;
 	case State::Flagged:

@@ -24,6 +24,8 @@
 #include "Mouse.h"
 #include "Graphics.h"
 #include "Board.h"
+#include "Menu.h"
+#include <memory>
 
 class Game
 {
@@ -43,6 +45,17 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables              */
-	Board board;
+	enum class State
+	{
+		Selection,
+		Playing,
+		Over
+	};
+	Board* board = nullptr;
+	Menu menu;
+	State state = State::Selection;
+
+	bool bLMB_inhibited = false;
+	bool bRMB_inhibited = false;
 	/********************************/
 };
